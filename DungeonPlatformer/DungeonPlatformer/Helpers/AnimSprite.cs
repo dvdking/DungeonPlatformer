@@ -11,27 +11,28 @@ namespace DungeonPlatformer.Helpers
     {
         public int Frame;
         public float TimePerFrame;
-        private int _framesCount;
+        private readonly int _framesCount;
 
         public Texture2D Texture { get; private set; }
 
         public Rectangle SourceRect
         {
-            get { return new Rectangle(Frame*_frameWidth, 
-                                        Frame*_frameHeight,
-                                        _frameWidth,
-                                        _frameHeight); }
+            get { return new Rectangle(Frame*FrameWidth, 
+                                        0,
+                                        FrameWidth,
+                                        FrameHeight); }
         }
 
-        private int _frameWidth, _frameHeight;
+        public readonly int FrameWidth;
+        public readonly int FrameHeight;
         private float _elapsed;
 
         public AnimSprite(Texture2D texture,int framesCount, int frameWidth, int frameHeight)
         {
+            FrameHeight = frameHeight;
+            FrameWidth = frameWidth;
+            _framesCount = framesCount ;
             Texture = texture;
-            _frameHeight = frameHeight;
-            _frameWidth = frameWidth;
-            _framesCount = framesCount;
         }
 
 
@@ -41,11 +42,18 @@ namespace DungeonPlatformer.Helpers
             if(_elapsed > TimePerFrame)
             {
                 Frame++;
-                if(Frame > _framesCount)
+                if(Frame > _framesCount - 1)
                     Frame = 0;
 
                 _elapsed -= TimePerFrame;
             }
+        }
+
+        public AnimSprite Clone()
+        {
+            AnimSprite animSprite = new AnimSprite(this.Texture, _framesCount, FrameWidth, FrameHeight);
+            animSprite.TimePerFrame = this.TimePerFrame;
+            return animSprite;
         }
     }
 
