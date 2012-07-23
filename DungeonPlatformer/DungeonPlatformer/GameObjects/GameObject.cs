@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using DungeonPlatformer.Managers;
 using Microsoft.Xna.Framework;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace DungeonPlatformer.GameObjects
 {
@@ -11,10 +13,17 @@ namespace DungeonPlatformer.GameObjects
 
     public abstract class GameObject
     {
+        protected GameManager gameManager;
         public event CollisionEventHandler Collision;
+
+
+        protected List<Vector2> Collisions; 
+
 
         private float _x, _y;
         private float _xPrevious,_yPrevious;
+
+        public Vector2 Velocity;
 
         public float XPrevious
         {
@@ -74,6 +83,7 @@ namespace DungeonPlatformer.GameObjects
         }
 
         private int _width, _height;
+        protected float Friction;
 
         public int Width
         {
@@ -111,8 +121,123 @@ namespace DungeonPlatformer.GameObjects
             }
         }
 
-        public abstract void Update(float dt);
+        public GameObject(GameManager gameManager)
+        {
+            Collisions = new List<Vector2>();
+            this.gameManager = gameManager;
+            gameManager.Add(this);
+        }
+
+
+        public virtual void Update(float dt)
+        {
+            Velocity += Settings.Gravity*dt;
+            CheckCollisions(ref Velocity);
+            Position += Velocity;
+            if (Velocity.X > 0)
+            {
+                Velocity.X -= Friction;
+                if (Velocity.X < 0)
+                    Velocity.X = 0;
+            }
+            else if(Velocity.X < 0)
+            {
+                Velocity.X += Friction;
+                if (Velocity.X > 0)
+                    Velocity.X = 0;
+            }
+            if (Velocity.Y > 0)
+            {
+                Velocity.Y -= Friction;
+                if (Velocity.Y < 0)
+                    Velocity.Y = 0;
+            }
+            else if (Velocity.Y < 0)
+            {
+                Velocity.Y += Friction;
+                if (Velocity.Y > 0)
+                    Velocity.Y = 0;
+            }
+        }
+
         public abstract void Draw(float dt);
+
+        protected void CheckCollisions(ref Vector2 offset)
+        {
+            List<GameObject> collisionsX = gameManager.GetCollisions(new Rectangle((int)(X + offset.X),
+                                                                                  (int)Y,
+                                                                                  Width,
+                                                                                  Height));
+            List<GameObject> collisionsY = gameManager.GetCollisions(new Rectangle((int)X,
+                                                                                 (int)(Y + offset.Y),
+                                                                                 Width,
+                                                                                 Height));
+
+            List<GameObject> commonCollision = new List<GameObject>();
+            Collisions.Clear();
+
+                foreach (var item in collisionsX)
+                {
+                    if (item != this)
+                    {
+                            offset.X = 0;
+                            if (Position.X <= item.X)
+                            {
+                                Collisions.Add(new Vector2(-1, 0));
+                            }
+                            else
+                            {
+                                Collisions.Add(new Vector2(1, 0));
+                            }
+                        commonCollision.Add(item);
+                    }
+                }
+                foreach (var item in collisionsY)
+                {
+                    if (item != this)
+                    {
+                            offset.Y = 0;
+                            if (Position.Y <= item.Y)
+                            {
+                                Collisions.Add(new Vector2(0, -1));
+                            }
+                            else
+                            {
+                                Collisions.Add(new Vector2(0, 1));
+                            }
+                        if (!commonCollision.Contains(item))
+                            commonCollision.Add(item);
+                    }
+                }
+            
+
+            List<GameObject> collisionsAll = gameManager.GetCollisions(new Rectangle((int)(X + offset.X),
+                                                                      (int)(Y + offset.Y),
+                                                                      Width,
+                                                                      Height));
+
+            foreach (var item in collisionsAll)
+            {
+                if (item != this)
+                {
+
+                    offset.X = 0;
+                    offset.Y = 0;
+
+                    if (!commonCollision.Contains(item))
+                        commonCollision.Add(item);
+                    break;
+                }
+            }
+
+            if (Collision != null)
+                for (int index = 0; index < commonCollision.Count; index++)
+                {
+                    var item = commonCollision[index];
+                    OnCollision(item);
+                }
+        }
+
         public void OnCollision(GameObject gameObject)
         {
             if(Collision != null)

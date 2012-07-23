@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DungeonPlatformer.GameObjects;
+using Microsoft.Xna.Framework;
 
 namespace DungeonPlatformer.Managers
 {
