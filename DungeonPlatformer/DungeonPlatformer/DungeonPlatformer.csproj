@@ -82,6 +82,7 @@
     <Compile Include="GameObjects\Hero.cs" />
     <Compile Include="GameObjects\Wall.cs" />
     <Compile Include="Helpers\AnimSprite.cs" />
+    <Compile Include="Helpers\Camera2D.cs" />
     <Compile Include="Helpers\GamepadHelper.cs" />
     <Compile Include="Helpers\TextureManager.cs" />
     <Compile Include="Managers\CollisionManager.cs" />

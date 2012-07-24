@@ -31,20 +31,55 @@ namespace DungeonPlatformer.Helpers
         static private Dictionary<StaticTextures, Texture2D> _textures = new Dictionary<StaticTextures, Texture2D>();
 
         public static SpriteBatch SpriteBatch;
+        public static GraphicsDevice GraphicsDevice;
+        private static RenderTarget2D Target2D;
+        public static Texture2D CurrentScreenBuffer;
+
+        public static void Init(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
+        {
+            GraphicsDevice = graphicsDevice;
+            SpriteBatch = spriteBatch;
+            Target2D = new RenderTarget2D(GraphicsDevice, Settings.Resolution.Width, Settings.Resolution.Height);
+        }
 
         static public AnimSprite GetAnimSprite(AnimSprites at)
         {
             return _animationSprites[at].Clone();
         }
 
+        static public void Begin()
+        {
+            GraphicsDevice.SetRenderTarget(Target2D);
+        }
+        static public void End()
+        {
+            GraphicsDevice.SetRenderTarget(null);
+         //   CurrentScreenBuffer = new Texture2D(GraphicsDevice, Settings.Resolution.Width, Settings.Resolution.Height);
+          //  Color[] p = new Color[76800];
+           // Target2D.GetData(p);
+            CurrentScreenBuffer = (Texture2D)Target2D;
+
+            //CurrentScreenBuffer.SetData(p);
+           
+
+        }
+
         static public void DrawAnimationSprite(AnimSprite animSprite, Rectangle rectangle, Color color)
         {
             SpriteBatch.Draw(animSprite, rectangle, color);
+        }
+        static public void DrawAnimationSprite(AnimSprite animSprite, Vector2 v, Color color)
+        {
+            SpriteBatch.Draw(animSprite, v, color);
         }
 
         static public void DrawTexture(StaticTextures texture, Rectangle rectangle, Color color)
         {
             SpriteBatch.Draw(_textures[texture], rectangle, color);
+        }
+        static public void DrawTexture(StaticTextures texture, Vector2 vector, Color color)
+        {
+            SpriteBatch.Draw(_textures[texture], vector, color);
         }
 
         static public void LoadTextures(ContentManager content)

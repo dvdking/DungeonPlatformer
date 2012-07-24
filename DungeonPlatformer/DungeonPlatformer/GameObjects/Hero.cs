@@ -13,6 +13,7 @@ namespace DungeonPlatformer.GameObjects
     {
         private AnimSprite animSprite;
 
+        //public Rectangle Bounds { get {return new Rectangle((int)(X + 16), (int)Y, Width - 16, Height - 16);}}
 
         public Hero(GameManager gameManager):base(gameManager)
         {
@@ -20,7 +21,9 @@ namespace DungeonPlatformer.GameObjects
             animSprite.TimePerFrame = 50;
             Width = 32;
             Height = 32;
-            Friction = 1.5f;
+            Friction = 0.4f;
+            Speed = 2.0f;
+            JumpPower = 20;
 
         }
 
@@ -28,26 +31,26 @@ namespace DungeonPlatformer.GameObjects
         {
             if(GamepadHelper.Press(Buttons.DPadRight))
             {
-                MoveRight();
+                MoveRight(dt);
             }
             if (GamepadHelper.Press(Buttons.DPadLeft))
             {
-                MoveLeft();
+                MoveLeft(dt);
             }
-
             if (GamepadHelper.WasPressed(Buttons.A))
             {
-                Jump();
+                Jump(dt);
             }
             animSprite.Update(dt);
             base.Update(dt);
+
         }
 
 
 
         public override void Draw(float dt)
         {
-            TextureManager.SpriteBatch.Draw(animSprite, Bounds, Color.Wheat);
+            TextureManager.SpriteBatch.Draw(animSprite, Position, Color.Wheat);
         }
     }
 }

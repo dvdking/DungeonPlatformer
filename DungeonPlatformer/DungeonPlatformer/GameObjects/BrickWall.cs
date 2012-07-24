@@ -22,7 +22,7 @@ namespace DungeonPlatformer.GameObjects
 
         public override void Draw(float dt)
         {
-            TextureManager.DrawTexture(StaticTextures.Brick, Bounds, Color.White);
+            TextureManager.DrawTexture(StaticTextures.Brick, Position, Color.White);
         }
     }
 }

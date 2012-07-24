@@ -64,5 +64,9 @@ namespace DungeonPlatformer.Helpers
         {
             s.Draw(animSprite.Texture, rect, animSprite.SourceRect, color);
         }
+        public static void Draw(this SpriteBatch s, AnimSprite animSprite, Vector2 vector, Color color)
+        {
+            s.Draw(animSprite.Texture, vector, animSprite.SourceRect, color);
+        }
     }
 }

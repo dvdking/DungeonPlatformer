@@ -11,28 +11,32 @@ namespace DungeonPlatformer.GameObjects
     {
         private bool canJump = false;
 
-        public float JumpPower = 15.0f;
+        public float JumpPower = 7.0f;
 
-        public float Speed = 1.0f;
+        public float Speed = 0.1f;
+        public float MaxSpeed = 2.0f;
 
         public Creature(GameManager gameManager):base(gameManager)
         {
             Collision += OnCollisionWithWall;
         }
 
-        public void MoveLeft()
+        public void MoveLeft(float dt)
         {
-            Velocity.X -= Speed;
+            if(Velocity.X > -MaxSpeed)
+            Velocity.X -= Speed * dt;
         }
-        public void MoveRight()
+        public void MoveRight(float dt)
         {
-            Velocity.X += Speed;
+            if(Velocity.X < MaxSpeed)
+            Velocity.X += Speed * dt;
         }
 
-        public void Jump()
+        public void Jump( float dt)
         {
-            if(Collisions.Exists(p => p.Y == -1))
-            Velocity += new Vector2(0,-JumpPower);
+           // if(Collisions.Exists(p => p.Y == -1))
+            if(IsOnTheGround)
+            Velocity += new Vector2(0,-JumpPower * dt);
         }
 
         private void OnCollisionWithWall(GameObject gameObject)

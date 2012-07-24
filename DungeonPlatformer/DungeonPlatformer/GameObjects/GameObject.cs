@@ -23,6 +23,8 @@ namespace DungeonPlatformer.GameObjects
         private float _x, _y;
         private float _xPrevious,_yPrevious;
 
+        public bool IsOnTheGround { get;protected set; }
+
         public Vector2 Velocity;
 
         public float XPrevious
@@ -134,42 +136,46 @@ namespace DungeonPlatformer.GameObjects
             Velocity += Settings.Gravity*dt;
             CheckCollisions(ref Velocity);
             Position += Velocity;
-            if (Velocity.X > 0)
+            if (Collisions.Any())
             {
-                Velocity.X -= Friction;
-                if (Velocity.X < 0)
-                    Velocity.X = 0;
-            }
-            else if(Velocity.X < 0)
-            {
-                Velocity.X += Friction;
                 if (Velocity.X > 0)
-                    Velocity.X = 0;
-            }
-            if (Velocity.Y > 0)
-            {
-                Velocity.Y -= Friction;
-                if (Velocity.Y < 0)
-                    Velocity.Y = 0;
-            }
-            else if (Velocity.Y < 0)
-            {
-                Velocity.Y += Friction;
+                {
+                    Velocity.X -= Friction;
+                    if (Velocity.X < 0)
+                        Velocity.X = 0;
+                }
+                else if (Velocity.X < 0)
+                {
+                    Velocity.X += Friction;
+                    if (Velocity.X > 0)
+                        Velocity.X = 0;
+                }
                 if (Velocity.Y > 0)
-                    Velocity.Y = 0;
+                {
+                    Velocity.Y -= Friction;
+                    if (Velocity.Y < 0)
+                        Velocity.Y = 0;
+                }
+                else if (Velocity.Y < 0)
+                {
+                    Velocity.Y += Friction;
+                    if (Velocity.Y > 0)
+                        Velocity.Y = 0;
+                }
             }
+            IsOnTheGround = CheckGround();
         }
 
         public abstract void Draw(float dt);
 
         protected void CheckCollisions(ref Vector2 offset)
         {
-            List<GameObject> collisionsX = gameManager.GetCollisions(new Rectangle((int)(X + offset.X),
-                                                                                  (int)Y,
+            List<GameObject> collisionsX = gameManager.GetCollisions(new Rectangle((int)Math.Round(X + offset.X),
+                                                                                  (int)Math.Round(Y),
                                                                                   Width,
                                                                                   Height));
-            List<GameObject> collisionsY = gameManager.GetCollisions(new Rectangle((int)X,
-                                                                                 (int)(Y + offset.Y),
+            List<GameObject> collisionsY = gameManager.GetCollisions(new Rectangle((int)Math.Round(X),
+                                                                                 (int)Math.Round(Y + offset.Y),
                                                                                  Width,
                                                                                  Height));
 
@@ -181,13 +187,15 @@ namespace DungeonPlatformer.GameObjects
                     if (item != this)
                     {
                             offset.X = 0;
-                            if (Position.X <= item.X)
+                            if (Position.X < item.X)
                             {
                                 Collisions.Add(new Vector2(-1, 0));
+                                X = item.X -Width;
                             }
-                            else
+                            else if(Position.X > item.X)
                             {
                                 Collisions.Add(new Vector2(1, 0));
+                                X = item.X + item.Width;
                             }
                         commonCollision.Add(item);
                     }
@@ -197,45 +205,58 @@ namespace DungeonPlatformer.GameObjects
                     if (item != this)
                     {
                             offset.Y = 0;
-                            if (Position.Y <= item.Y)
+                            if (Position.Y < item.Y)
                             {
                                 Collisions.Add(new Vector2(0, -1));
+                                Y = item.Y - Height;
+
                             }
-                            else
+                            else if(Position.Y > item.Y)
                             {
                                 Collisions.Add(new Vector2(0, 1));
+                                Y = item.Y + item.Height;
                             }
                         if (!commonCollision.Contains(item))
                             commonCollision.Add(item);
                     }
                 }
-            
 
-            List<GameObject> collisionsAll = gameManager.GetCollisions(new Rectangle((int)(X + offset.X),
-                                                                      (int)(Y + offset.Y),
-                                                                      Width,
-                                                                      Height));
-
-            foreach (var item in collisionsAll)
-            {
-                if (item != this)
+                if (offset.X != 0 && offset.Y != 0)
                 {
+                    List<GameObject> collisionsAll = gameManager.GetCollisions(new Rectangle((int)Math.Round(X + offset.X),
+                                                                                             (int)Math.Round(Y + offset.Y),
+                                                                                             Width,
+                                                                                             Height));
 
-                    offset.X = 0;
-                    offset.Y = 0;
+                    foreach (var item in collisionsAll)
+                    {
+                        if (item != this)
+                        {
 
-                    if (!commonCollision.Contains(item))
-                        commonCollision.Add(item);
-                    break;
+                            offset.X = 0;
+                            offset.Y = 0;
+
+                            if (!commonCollision.Contains(item))
+                                commonCollision.Add(item);
+                            break;
+                        }
+                    }
                 }
-            }
-
             if (Collision != null)
                 for (int index = 0; index < commonCollision.Count; index++)
                 {
                     var item = commonCollision[index];
                     OnCollision(item);
                 }
+        }
+
+        private bool CheckGround()
+        {
+            List<GameObject> collisions = gameManager.GetCollisions(new Rectangle((int)Math.Round(X),
+                                                                     (int)Math.Round(Y + 1),
+                                                                     Width,
+                                                                     Height));
+            return collisions.OfType<Wall>().Any();
         }
 
         public void OnCollision(GameObject gameObject)
